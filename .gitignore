@@ -1,0 +1,31 @@
+# Visual Studio
+.vs/
+bin/
+obj/
+Properties/launchSettings.json
+Properties/secrets/firebase-admin-sdk-key.json
+appsettings.json
+secrets/firebase-admin-sdk-key.json
+
+
+# Flutter
+.dart_tool/
+build/
+lib/user_auth/firebase_options.dart
+
+# Firebase
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Environment
+.env
+.env.*
+
+# Local configuration
+appsettings.Development.json
+
+# Firebase Admin key
+firebase-admin-sdk-key.json
+
+# macOS
+.DS_Store
