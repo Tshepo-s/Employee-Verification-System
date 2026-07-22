@@ -37,7 +37,7 @@ FirebaseApp.Create();
 
 builder.Services.AddSingleton(provider =>
     new FirebaseAuthProvider(
-        new FirebaseConfig("AIzaSyAQhNE76fHpivvr6SNFie5jF6C5SY1KrSs")
+        new FirebaseConfig("")
     )
 );
 builder.Services.AddCors(options =>
