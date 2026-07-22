@@ -37,7 +37,7 @@ FirebaseApp.Create();
 
 builder.Services.AddSingleton(provider =>
     new FirebaseAuthProvider(
-        new FirebaseConfig("AIzaSyAQhNE76fHpivvr6SNFie5jF6C5SY1KrSs")
+        new FirebaseConfig("")
     )
 );
 builder.Services.AddCors(options =>
@@ -62,7 +62,7 @@ builder.Services.AddSingleton(cloudinary);
 
 
 // Register Firestore
-builder.Services.AddSingleton(provider => FirestoreDb.Create("leavesystem-520ac"));
+builder.Services.AddSingleton(provider => FirestoreDb.Create(""));
 
 
 
