@@ -1,0 +1,12 @@
+﻿@model LEAVE_SYSTEM.Models.TwoFactor
+@{
+    ViewBag.Title = "2FA";
+    Layout = null;
+}
+<form asp-action="Verify2FA" method="post">
+    <input asp-for="EmailAddress" type="hidden" />
+    <label>Enter the 2FA code sent to your email</label>
+    <input asp-for="Code" type="text" />
+    <input asp-for="Password" type="hidden" />
+    <button type="submit">Verify</button>
+</form>

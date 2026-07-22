@@ -1,0 +1,153 @@
+﻿@model LEAVE_SYSTEM.Models.LogDetails
+@{
+    ViewBag.Title = $"Log Details - {Model.LogId}";
+
+    var status = ViewBag.Status as string ?? "Unknown";
+    string GetStatusBadgeClass(string s) => s switch
+    {
+        "verified" => "bg-success text-white",
+        "In Progress" => "bg-info text-white",
+        "pending" => "bg-warning text-dark",
+        "rejected" => "bg-danger text-white",
+        _ => "bg-secondary text-white",
+    };
+    var statusClass = GetStatusBadgeClass(status);
+
+}
+
+<style>
+    .detail-header {
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 3px solid #006400; 
+        padding-bottom: 5px;
+        margin-bottom: 30px;
+        display: inline-block;
+    }
+
+    .detail-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .image-container {
+        padding: 30px 15px;
+        background-color: #f8f9fa; 
+        border-right: 1px solid #e9ecef;
+        border-radius: 12px 0 0 12px;
+        position: relative;
+    }
+
+    .verification-image {
+        width: 180px;
+        height: 180px;
+        object-fit: cover;
+        border: 4px solid #ffffff;
+        box-shadow: 0 0 0 2px #006400; 
+    }
+
+    .detail-table th {
+        color: #4b5563;
+        font-weight: 600;
+        width: 180px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    .detail-table td {
+        font-weight: 500;
+        color: #1f2937;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    .btn-verify {
+        background-color: #006400;
+        border-color: #006400;
+        transition: background-color 0.3s;
+        font-weight: 700;
+        padding: 10px 20px;
+    }
+
+        .btn-verify:hover {
+            background-color: #004c00;
+            border-color: #004c00;
+            color: white;
+        }
+</style>
+
+<div class="container mt-5">
+    <h1 class="detail-header">Verification Log Details: <span class="text-secondary">#@Model.LogId</span></h1>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-times-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card detail-card">
+        <div class="card-body row p-0">
+
+            <div class="col-md-4 text-center image-container d-flex flex-column align-items-center justify-content-center">
+                <h5 class="card-title text-dark fw-bold mb-3">Verification Photo</h5>
+                <img src="@Model.VerificationImageUrl" class="rounded-circle verification-image mb-3" alt="Verification Image" />
+
+                <h4 class="mb-0 text-dark">@Model.Name @Model.Surname</h4>
+                <p class="text-muted">ID: @Model.IdNumber</p>
+            </div>
+
+            <div class="col-md-8 p-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                    <h5 class="text-dark fw-bold mb-0">
+                        Status: <span class="badge @statusClass" style="font-size: 1rem; padding: 0.5em 0.8em;">@status</span>
+                    </h5>
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-calendar-alt me-1"></i> Completed: @(ViewBag.CompletedAt ?? "N/A")
+                    </p>
+                </div>
+
+                <table class="table table-borderless detail-table">
+                    <tbody>
+                        <tr><th>Log ID</th><td>@Model.LogId</td></tr>
+                        <tr><th>Employee Number</th><td>@Model.EmployeeNumber</td></tr>
+                        <tr><th>Department</th><td>@Model.Department</td></tr>
+                        <tr><th>Contract Type</th><td>@Model.Contract</td></tr>
+                        <tr><th>Gender</th><td>@Model.Gender</td></tr>
+                        <tr><th>Reason</th><td>@Model.Reason</td></tr>
+
+                    </tbody>
+                </table>
+
+                <div class="mt-4 pt-3 border-top d-flex gap-3">
+                    @if (status == "pending")
+                    {
+                        <form asp-action="VerifyLog" asp-controller="Home" method="post" style="display:inline;">
+                            <input type="hidden" name="logId" value="@Model.LogId" />
+                            <button type="submit" class="btn btn-verify text-white btn-lg">
+                                <i class="fas fa-thumbs-up me-2"></i> Verify Log
+                            </button>
+                        </form>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/CDQ+09iWbuS0GgB6g/X9c/fB2C7H5D2nLhLw2pD/mNlA2O/0y7W3Z4H+Ww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+}

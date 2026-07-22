@@ -1,0 +1,276 @@
+﻿@model IEnumerable<LEAVE_SYSTEM.Models.Employees>
+
+@{
+    ViewBag.Title = "Registered Users";
+}
+
+<style>
+    .admin-header {
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 3px solid #006400; 
+        padding-bottom: 5px;
+        margin-bottom: 30px;
+        display: inline-block;
+        font-size: 2.5rem;
+    }
+
+    .filter-container {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .form-control:focus {
+        border-color: #006400;
+        box-shadow: 0 0 0 0.25rem rgba(0, 100, 0, 0.25);
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .user-table {
+        border-collapse: separate;
+        border-spacing: 0 8px;
+        width: 100%;
+    }
+
+        .user-table thead th {
+            background-color: #f8f9fa; 
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 2px solid #006400;
+            padding: 15px 12px;
+            vertical-align: middle;
+        }
+
+        .user-table tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+            .user-table tbody tr:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+        .user-table tbody td {
+            padding: 12px;
+            vertical-align: middle;
+            font-weight: 500;
+            color: #1f2937;
+            border: none;
+        }
+
+    .profile-photo {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+    }
+
+    .page-link {
+        color: #006400; 
+    }
+
+    .page-item.active .page-link {
+        background-color: #006400; 
+        border-color: #006400;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="admin-header">Registered Users</h1>
+
+    <div class="filter-container">
+        <label for="searchUsers" class="filter-label">Search Users</label>
+        <input type="text" id="searchUsers" class="form-control" placeholder="Search by name, email, or department..." />
+    </div>
+
+    <div class="table-responsive">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i> No registered users found.
+            </div>
+        }
+        else
+        {
+            <table class="table user-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Contract</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+                            <td>
+                                @if (!string.IsNullOrEmpty(user.ProfileImageUrl))
+                                {
+                                    <img src="@user.ProfileImageUrl" alt="Profile" class="profile-photo" />
+                                }
+                                else
+                                {
+                                    <i class="fas fa-user-circle fa-3x text-muted profile-photo" style="width: 45px; height: 45px;"></i>
+                                }
+                            </td>
+                            <td>@($"{user.FirstName} {user.Surname}")</td>
+                            <td>@user.EmailAddress</td>
+                            <td>@user.Department</td>
+                            <td>@user.Contract</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (Model != null && Model.Count() > 0)
+    {
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div id="infoText" class="text-muted small"></div>
+            <nav aria-label="User Pagination">
+                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        const ROWS_PER_PAGE = 10;
+        let currentPage = 1;
+
+        const searchInput = document.getElementById('searchUsers');
+        const tableBody = document.querySelector('#usersTable tbody');
+        const paginationControls = document.getElementById('paginationControls');
+        const infoText = document.getElementById('infoText');
+
+        const initialRows = Array.from(tableBody ? tableBody.querySelectorAll('tr') : []);
+        let filteredRows = initialRows;
+
+
+        function applyUserFiltersAndPagination(page = 1) {
+            const filterText = searchInput.value.toLowerCase();
+
+            filteredRows = initialRows.filter(row => {
+                const name = row.cells[1].innerText.toLowerCase();
+                const email = row.cells[2].innerText.toLowerCase();
+                const department = row.cells[3].innerText.toLowerCase();
+
+                return name.includes(filterText) || email.includes(filterText) || department.includes(filterText);
+            });
+
+            currentPage = page;
+            renderTablePage();
+            renderPaginationControls();
+        }
+
+
+        function renderTablePage() {
+            const totalRows = filteredRows.length;
+            const start = (currentPage - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+
+            initialRows.forEach(row => row.style.display = 'none');
+
+            for (let i = start; i < end && i < totalRows; i++) {
+                filteredRows[i].style.display = '';
+            }
+
+            const displayStart = totalRows === 0 ? 0 : start + 1;
+            const displayEnd = Math.min(end, totalRows);
+            infoText.textContent = `Showing ${displayStart} to ${displayEnd} of ${totalRows} entries.`;
+        }
+
+        function renderPaginationControls() {
+            paginationControls.innerHTML = '';
+            const pageCount = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+            if (pageCount <= 1) return;
+
+            // Function to create a page item link
+            const createPageItem = (page, text, disabled = false, active = false) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = text;
+                a.setAttribute('data-page', page);
+
+                if (!disabled && !active) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        applyUserFiltersAndPagination(page);
+                    };
+                }
+
+                li.appendChild(a);
+                return li;
+            };
+
+            paginationControls.appendChild(createPageItem(currentPage - 1, 'Previous', currentPage === 1));
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(pageCount, currentPage + 2);
+
+            if (startPage > 1) {
+                 paginationControls.appendChild(createPageItem(1, '1'));
+                 if (startPage > 2) paginationControls.appendChild(createPageItem(0, '...', true));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationControls.appendChild(createPageItem(i, i, false, i === currentPage));
+            }
+
+            if (endPage < pageCount) {
+                if (endPage < pageCount - 1) paginationControls.appendChild(createPageItem(0, '...', true));
+                paginationControls.appendChild(createPageItem(pageCount, pageCount));
+            }
+
+
+            paginationControls.appendChild(createPageItem(currentPage + 1, 'Next', currentPage === pageCount));
+        }
+
+        
+        const filterListeners = () => {
+            applyUserFiltersAndPagination(1);
+        };
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterListeners);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tableBody) {
+                applyUserFiltersAndPagination(1);
+            }
+        });
+
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+        document.head.appendChild(fontAwesomeLink);
+    </script>
+}

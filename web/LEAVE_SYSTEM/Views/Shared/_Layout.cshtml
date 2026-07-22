@@ -1,0 +1,317 @@
+﻿@* Reorganized Logic: Ensure Profile and Logout appear once at the end *@
+@{
+    bool isAdmin = ViewBag.IsAdmin == true;
+    bool isAuditor = ViewBag.IsAuditor == true;
+    bool isUser = ViewBag.User == true;
+    // Determine if the user is *any* logged-in role.
+    bool isAuthenticated = isAdmin || isAuditor || isUser;
+
+
+    // Determine if the user should see the Profile tab (Admin or Standard User, but NOT Auditor)
+    bool showProfile = isAdmin || isUser;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - LEAVE_SYSTEM</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LEAVE_SYSTEM.styles.css" asp-append-version="true" />
+
+    @* Add Font Awesome for Footer Icons *@
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWWIx+LLMD/CDQ+09iWbuS0GgB6g/X9c/fB2C7H5D2nLhLw2pD/mNlA2O/0y7W3Z4H+Ww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    @* Add Inter Font for Footer Consistency *@
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+                        body {
+                                    background-color: #f0fdf4;
+                                    color: #166534;
+                                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Prioritize Inter if available */
+
+
+        }
+
+                        .navbar {
+                                    background-color: #166534;
+                                    border-bottom: 2px solid #a7f3d0;
+
+        }
+
+                        .navbar-brand {
+                                    color: #f0fdf4;
+                                    font-weight: 600;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 10px;
+
+        }
+
+                            .navbar-brand img {
+                                        height: 40px;
+                                        width: auto;
+
+        }
+
+                        .navbar-nav .nav-link {
+                                    color: #ffffff !important;
+                                    font-weight: 600;
+
+        }
+
+
+                            .navbar-nav .nav-link:hover {
+                                        color: white;
+
+        }
+
+                            .navbar-nav .nav-link.active {
+                                        color: white;
+                                        border-bottom: 2px solid white;
+
+        }
+
+
+                        .container {
+                                    background-color: #ffffff;
+                                    border-radius: 8px;
+                                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                                    padding: 2rem;
+                                    margin-top: 2rem;
+
+        }
+
+                        .navbar-brand,
+                        .navbar-brand a {
+                                    color: #ffffff !important;
+                                    font-weight: 600;
+                                    display: flex;
+                                    align-items: center;
+
+        }
+
+
+
+        /* --- Footer Styles --- */
+                .site-footer {
+                        background-color: #006400; /* Dark Green background for the entire footer area */
+                        color: #ffffff; /* White text for main footer content */
+                        padding: 40px 0 20px;
+                        font-size: 0.9rem;
+                        margin-top: 4rem;
+
+        }
+
+                .containers {
+                        background-color: #006400;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                        padding: 2rem;
+                        margin-top: 2rem;
+
+        }
+
+                .footer-logo {
+                        height: 50px;
+                        margin-bottom: 15px;
+
+        }
+
+                .footer-heading {
+                        color: #ffffff; /* Headings should be white */
+                        font-size: 1.1rem;
+                        font-weight: 600;
+                        margin-bottom: 15px;
+                        border-bottom: 2px solid #d4edda; /* Light green accent line */
+                        display: inline-block;
+                        padding-bottom: 5px;
+
+        }
+
+                .footer-links li {
+                        margin-bottom: 8px;
+
+        }
+
+                .footer-links a, .footer-contact p, .footer-contact a {
+                        color: #d4edda; /* Light green text for links and contact info */
+                        text-decoration: none;
+
+        }
+
+                        .footer-links a:hover, .footer-contact a:hover {
+                                color: #ffffff; /* White hover for links */
+                                text-decoration: underline;
+
+            }
+
+                .social-icons a {
+                        color: #ffffff; /* Social icons should be white */
+                        font-size: 1.3rem;
+                        margin-right: 15px;
+                        transition: color 0.3s;
+
+        }
+
+                    .social-icons a:hover {
+                            color: #d4edda; /* Light Green hover */
+
+        }
+
+                .copyright-bar {
+                        border-top: 1px solid #004c00; /* Darker green line */
+                        padding-top: 15px;
+                        margin-top: 20px;
+                        text-align: center;
+                        color: #d4edda; /* Light green for copyright text */
+
+        }
+
+
+
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/thumb_2_treasury.png" alt="National Treasury Logo" />
+                    Employee Verification
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                                          aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    @* --- START: LEFT-ALIGNED NAVIGATION TABS --- *@
+                    <ul class="navbar-nav flex-grow-1">
+                        @* 1. Core Functionality (NOW ONLY for authenticated users) *@
+                        @if (isAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Verifications</a>
+                            </li>
+                        }
+
+                        @* 2. Role-Specific Tabs (Admin/Auditor) *@
+                        @if (isAdmin || isAuditor)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="GetEmployees">Employees</a>
+                            </li>
+                        }
+
+                        @if (isAuditor)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="GetUsers">Registered Users</a>
+                            </li>
+                        }
+
+                        @* 3. Informational Tabs *@
+                      
+                    </ul>
+                    @* --- END: LEFT-ALIGNED TABS --- *@
+
+                    @* --- START: RIGHT-ALIGNED USER TABS (ms-auto pushes them right) --- *@
+                    <ul class="navbar-nav ms-auto">
+                        @if (isAuthenticated)
+                        {
+                            @* 4. User Profile (Only for Admin and Standard User) *@
+                            @if (showProfile)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Profile">Profile</a>
+                                </li>
+                            }
+                            @* 5. Logout (For all authenticated users) *@
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="SignOutUser">Log out</a>
+                            </li>
+                        }
+                    </ul>
+                    @* --- END: RIGHT-ALIGNED TABS --- *@
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    @* --- START: MERGED FOOTER CONTENT --- *@
+    <footer class="site-footer">
+        <div class="containers">
+            <div class="row">
+
+                <div class="col-md-4 mb-4">
+                    @* Note: Using asp-append-version for cache-busting *@
+                    <img src="~/images/thumb_2_treasury.png" alt="National Treasury Logo" class="footer-logo" asp-append-version="true" />
+                    <p>Ensuring economic stability and fiscal discipline of South Africa through effective financial management.</p>
+                </div>
+
+                <div class="col-md-2 col-sm-6 mb-4">
+                    <h5 class="footer-heading">Quick Links</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">Official Website</a></li>
+                        <li><a href="#">Legislation</a></li>
+                        <li><a href="#">Publications</a></li>
+                        <li>
+
+                            <a href="@Url.Action("About", "Home")">About</a>
+
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <h5 class="footer-heading">Resources</h5>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Use</a></li>
+                        <li><a href="#">Accessibility</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3 mb-4 footer-contact">
+                    <h5 class="footer-heading">Contact Us</h5>
+                    <p><i class="fas fa-map-marker-alt me-2"></i> 240 Madiba St, Pretoria, 0001</p>
+                    <p><i class="fas fa-phone me-2"></i> +27 12 315 5944</p>
+                    <p><i class="fas fa-envelope me-2"></i> <a href="mailto:info@treasury.gov.za">info@treasury.gov.za</a></p>
+
+                    <div class="social-icons mt-3">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="row">
+                <div class="col-12">
+                    <div class="copyright-bar">
+                        &copy; @DateTime.Now.Year National Treasury. All rights reserved. | Republic of South Africa
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    @* --- END: MERGED FOOTER CONTENT --- *@
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

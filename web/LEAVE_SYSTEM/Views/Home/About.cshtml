@@ -1,0 +1,175 @@
+﻿@model List<Log>
+@{
+    // The Layout is intentionally omitted or set to null in your request's structure,
+    // which implies using the default MVC layout for this view.
+    // If you want to explicitly use the main layout:
+    // Layout = "_Layout";
+    ViewData["Title"] = "About Employee Verification | National Treasury";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@* NOTE: For the styling to work correctly without a custom external CSS file, 
+    the styles for .about-hero, .section-heading, .custom-table, etc., 
+    must be included directly in this file using a <style> block.
+*@
+<style>
+    /* --- Page-Specific Styling (Necessary for the new UI look) --- */
+    body {
+        /* Ensures body background is light if _Layout doesn't set it */
+        background-color: #f8f9fa;
+    }
+
+    .about-hero {
+        background: linear-gradient(135deg, #166534 0%, #064e3b 100%); /* Dark green gradient */
+        color: white;
+        padding: 80px 20px;
+        margin-bottom: 3rem;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+
+        .about-hero h1 {
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+    .section-heading {
+        font-weight: 700;
+        color: #166534; /* Dark green for section headings */
+    }
+
+    .section-divider {
+        border: 0;
+        height: 3px;
+        background: linear-gradient(to right, #a7f3d0, #16a34a, #a7f3d0); /* Green gradient divider */
+        width: 80px;
+        margin: 0 auto 3rem auto;
+        border-radius: 50%;
+        opacity: 0.7;
+    }
+
+    .card {
+        border-radius: 10px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+    .card-title {
+        font-weight: 600;
+    }
+
+    .list-group-item {
+        padding-left: 0;
+        background-color: transparent !important;
+    }
+
+        .list-group-item i {
+            font-size: 1.1em;
+        }
+
+    .custom-table thead {
+        background-color: #166534 !important;
+    }
+
+    .custom-table th {
+        border-color: #0c4a3b !important;
+    }
+
+    .custom-table tbody tr:hover {
+        background-color: #e0f2f1;
+    }
+
+    .custom-table .badge {
+        font-weight: 500;
+        padding: 0.4em 0.7em;
+        border-radius: 0.35rem;
+    }
+</style>
+
+
+@* --- START: Content (Hero Section) --- *@
+<div class="about-hero text-center py-5 mb-5">
+    <h1 class="display-4 text-white animate__animated animate__fadeInDown">Empowering Secure Government Operations</h1>
+    <p class="lead text-white-50 animate__animated animate__fadeInUp">The National Treasury's commitment to efficiency and transparency.</p>
+</div>
+@* --- END: Content (Hero Section) --- *@
+
+
+@* --- START: Content (Main Body) --- *@
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <h2 class="text-center mb-4 section-heading">About the Employee Verification System</h2>
+            <hr class="section-divider mb-5">
+
+            <div class="card mb-5 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-success mb-3"><i class="fas fa-clipboard-check me-2"></i>Our Mandate: Upholding Integrity</h3>
+                    <p class="card-text">The <strong>Employee Verification System</strong> is a pivotal application developed for the <strong>National Treasury</strong> of the Republic of South Africa. Our core mandate is to **fortify the integrity and operational efficiency of public finance management** by offering a meticulously secure, highly reliable, and fully auditable framework for verifying the employment status and critical details of government personnel.</p>
+                    <p class="card-text">This initiative underscores our dedication to maintaining the highest standards within the public sector, ensuring every verification contributes to a robust and accountable financial ecosystem.</p>
+                </div>
+            </div>
+
+            <div class="card mb-5 shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="card-title text-success mb-3"><i class="fas fa-lightbulb me-2"></i>Our Purpose: Driving Efficiency & Trust</h3>
+                    <p class="card-text">Developed in harmony with the National Treasury's unwavering commitment to <strong>fiscal discipline, comprehensive transparency, and exemplary good governance</strong>, this system was meticulously crafted to address key operational needs:</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item border-0"><i class="fas fa-check-circle text-primary me-2"></i> <strong>Ensure Unwavering Accountability:</strong> Provide instant confirmation of employee status, critically supporting compliance, rigorous audit processes, and streamlined human resource management.</li>
+                        <li class="list-group-item border-0"><i class="fas fa-rocket text-info me-2"></i> <strong>Streamline Operational Workflows:</strong> Revolutionize manual verification methods by introducing a digital, real-time, and centrally managed process, resulting in significant savings of time and invaluable resources.</li>
+                        <li class="list-group-item border-0"><i class="fas fa-shield-alt text-danger me-2"></i> <strong>Elevate Data Security:</strong> Implement robust protection for sensitive personnel data through an advanced, role-based authentication model, guaranteeing that access to information is strictly limited to authorized administrators and auditors.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3 class="text-center mb-4 section-heading">System Roles & Capabilities</h3>
+            <hr class="section-divider mb-5">
+
+            <div class="table-responsive mb-5">
+                <table class="table table-hover table-bordered table-striped custom-table shadow-sm">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th scope="col">Feature Area</th>
+                            <th scope="col">Core Objective</th>
+                            <th scope="col">Authorized User Roles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Verifications (Homepage)</strong></td>
+                            <td>Effortlessly search and confirm employee employment status.</td>
+                            <td><span class="badge bg-success">All Users</span> (Admin, Auditor, Standard User)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Employee Management</strong></td>
+                            <td>Centralized viewing and administration of the employee database.</td>
+                            <td><span class="badge bg-warning text-dark">Admin</span> &amp; <span class="badge bg-info text-dark">Auditor</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Registered Users Overview</strong></td>
+                            <td>Comprehensive oversight and management of application user accounts and assigned roles.</td>
+                            <td><span class="badge bg-info text-dark">Auditor</span> (for enhanced governance and control)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>User Profile & Settings</strong></td>
+                            <td>Personalized access to user-specific settings and security information.</td>
+                            <td><span class="badge bg-warning text-dark">Admin</span> &amp; <span class="badge bg-primary">Standard User</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mt-5">
+                <h3 class="section-heading text-success">Our Ongoing Commitment</h3>
+                <p class="lead">We are steadfast in our dedication to upholding the <strong>highest standards of data integrity, privacy, and operational security</strong>. This advanced system stands as a testament to the National Treasury's continuous pursuit of a modern, efficient, and digitized public service that unequivocally prioritizes accountability and the effective stewardship of public resources.</p>
+                <p class="text-muted mt-4"><small><em>For further official information and detailed services of the National Treasury, please visit the <a href="https://www.treasury.gov.za" target="_blank" class="text-success fw-bold">official National Treasury website</a>.</em></small></p>
+            </div>
+        </div>
+    </div>
+</div>
+@* --- END: Content (Main Body) --- *@

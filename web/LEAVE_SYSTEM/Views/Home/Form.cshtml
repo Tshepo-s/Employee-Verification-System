@@ -1,0 +1,37 @@
+﻿@model HomeViewModel
+
+<h2>Employee Verification System</h2>
+<h3>Welcome, @Model.CurrentName</h3>
+
+@if (!Model.Logs.Any())
+{
+    <p>No logs found</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Completed</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model.Logs)
+            {
+                <tr>
+                    <td>@($"{log.Name} {log.Surname}")</td>
+                    <td>@log.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<a asp-action="OneTimeForm" class="btn btn-success">Add Log</a>
+
+<nav class="navbar fixed-bottom navbar-light bg-success">
+    <a class="nav-link text-white" asp-action="Index">Home</a>
+    <a class="nav-link text-white" asp-controller="Profile" asp-action="Index">Profile</a>
+</nav>

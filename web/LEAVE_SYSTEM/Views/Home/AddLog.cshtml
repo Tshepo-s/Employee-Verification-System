@@ -1,0 +1,258 @@
+﻿@model LEAVE_SYSTEM.Models.AddLogRequest
+
+@{
+    ViewData["Title"] = "New Verification Request";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Custom Green Button Style */
+    .btn-green {
+        background-color: #006400 !important; /* Dark Green - Primary Brand Color */
+        border-color: #006400 !important;
+        color: white;
+        transition: background-color 0.3s, transform 0.1s;
+    }
+
+        .btn-green:hover {
+            background-color: #004c00 !important; /* Slightly darker hover */
+            border-color: #004c00 !important;
+        }
+
+        .btn-green:active {
+            transform: scale(0.98);
+        }
+
+    /* Card and Layout Styling */
+    .verification-card {
+        border: none;
+        border-radius: 15px; /* Softer rounded corners */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Elevated, professional shadow */
+        padding: 40px !important; /* Increased padding */
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px; /* Slightly rounded inputs */
+        padding: 10px 15px;
+        transition: border-color 0.3s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #006400;
+            box-shadow: 0 0 0 0.25rem rgba(0, 100, 0, 0.25); /* Green focus ring */
+        }
+
+    /* Camera/Photo Container Styling */
+    #cameraContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #video, #photo {
+        border: 4px solid #006400 !important; /* Green border for the visual elements */
+        border-radius: 12px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        width: 320px;
+        height: 240px; /* Use standard video aspect ratio */
+        object-fit: cover;
+    }
+</style>
+
+
+<div class="container py-5">
+
+    <div class="card verification-card mx-auto" style="max-width: 750px;">
+
+        <h1 class="text-center mb-4 fw-bold text-dark">Employee Verification Request</h1>
+        <p class="text-center text-muted mb-4">Please provide the required details and a live photo for identity verification.</p>
+        <hr class="mb-4" />
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" role="alert">
+                <h5 class="alert-heading fw-bold">Validation Error</h5>
+                <ul class="mb-0 ps-3">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <form asp-action="AddLog" method="post" enctype="multipart/form-data" id="addLogForm">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group mb-4">
+                        <label class="fw-semibold text-secondary mb-1">Department</label>
+                        <select asp-for="Department" class="form-select" required>
+                            <option value="">Select Department</option>
+                            <option>Public Finance</option>
+                            <option>Economic Policy and International Cooperation</option>
+                            <option>Tax and Financial Sector Policy</option>
+                            <option>Asset and Liability Management</option>
+                            <option>Office of the Accountant-General</option>
+                            <option>Intergovernmental Relations</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="fw-semibold text-secondary mb-1">Employee Number</label>
+                        <input asp-for="EmployeeNumber" class="form-control" placeholder="E.g., 123456" required />
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="fw-semibold text-secondary mb-1">ID Number (SA 13 Digits)</label>
+                        <input asp-for="IdNumber" class="form-control" maxlength="13" id="idNumber" placeholder="Enter 13-digit ID" required />
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="mb-4 text-center">
+                        <label class="fw-semibold text-secondary mb-3">Live Photo Verification</label>
+
+                        <div id="cameraContainer" class="mb-3">
+                            <video id="video" autoplay class="border rounded"></video>
+                            <canvas id="canvas" width="320" height="240" hidden></canvas>
+                            <img id="photo" hidden class="border rounded" />
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <button type="button" id="startCamera" class="btn btn-green px-4 py-2 fw-semibold rounded-pill">
+                                <i class="fas fa-video me-1"></i> Start Camera
+                            </button>
+                            <button type="button" id="capture" class="btn btn-green px-4 py-2 fw-semibold rounded-pill" disabled>
+                                <i class="fas fa-camera me-1"></i> Capture
+                            </button>
+                            <button type="button" id="retake" class="btn btn-warning px-4 py-2 fw-semibold rounded-pill" hidden>
+                                <i class="fas fa-redo-alt me-1"></i> Retake
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <input type="hidden" asp-for="Dob" id="dob" />
+            <input type="hidden" asp-for="Age" id="age" />
+            <input type="hidden" asp-for="Citizenship" id="citizenship" />
+            <input type="hidden" asp-for="ProfileImageBase64" id="ProfileImageBase64" />
+
+
+            <div class="text-center pt-3">
+                <button type="submit" class="btn btn-green btn-lg px-5 py-2 fw-bold rounded-pill">
+                    <i class="fas fa-paper-plane me-2"></i> Submit Verification
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // --- ID Validation Logic ---
+        const idInput = document.getElementById('idNumber');
+        const videoElement = document.getElementById('video');
+        const captureButton = document.getElementById('capture');
+        const retakeButton = document.getElementById('retake');
+        const startCameraButton = document.getElementById('startCamera');
+
+        idInput.addEventListener('input', () => parseID(idInput.value));
+
+        function parseID(id) {
+            // Reset fields if ID is invalid length
+            if (id.length !== 13 || !/^\d+$/.test(id)) {
+                document.getElementById('dob').value = '';
+                document.getElementById('age').value = '';
+                document.getElementById('citizenship').value = '';
+                // Optional: show a small error or warning if ID is partial/invalid
+                return;
+            }
+
+            // ID parsing logic
+            const yy = parseInt(id.substring(0,2));
+            const mm = parseInt(id.substring(2,4));
+            const dd = parseInt(id.substring(4,6));
+            const now = new Date();
+            const currentYear = now.getFullYear() % 100;
+            const century = yy <= currentYear ? 2000 : 1900;
+            const dob = new Date(century + yy, mm - 1, dd);
+
+            if (isNaN(dob) || dob > now) return; // Invalid date or future date
+
+            const age = now.getFullYear() - dob.getFullYear() -
+                ((now.getMonth() < dob.getMonth() ||
+                 (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate())) ? 1 : 0);
+
+            // Optional: Basic age validation (e.g., must be over 18)
+            // if (age < 18) return;
+
+            const citizenshipDigit = parseInt(id[10]);
+            const citizenship = citizenshipDigit === 0 ? "South African Citizen" : "Permanent Resident";
+
+            document.getElementById('dob').value = dob.toISOString().substring(0, 10); // Use YYYY-MM-DD
+            document.getElementById('age').value = age;
+            document.getElementById('citizenship').value = citizenship;
+        }
+
+        // --- Camera Logic ---
+        let stream, canvas = document.getElementById('canvas'),
+            photo = document.getElementById('photo'),
+            base64Field = document.getElementById('ProfileImageBase64');
+
+        startCameraButton.onclick = async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 320 },
+                        height: { ideal: 240 }
+                    }
+                });
+                videoElement.srcObject = stream;
+                captureButton.disabled = false;
+                startCameraButton.hidden = true; // Hide start button once started
+                videoElement.hidden = false;
+                photo.hidden = true;
+                base64Field.value = ''; // Clear existing image data
+
+            } catch (err) {
+                alert("Unable to access camera. Please ensure a camera is connected and permissions are granted: " + err.message);
+                captureButton.disabled = true;
+            }
+        };
+
+        captureButton.onclick = () => {
+            const ctx = canvas.getContext('2d');
+            // Ensure canvas size matches video size
+            canvas.width = videoElement.videoWidth || 320;
+            canvas.height = videoElement.videoHeight || 240;
+
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9); // Use jpeg for smaller size
+
+            // Set the hidden field value
+            base64Field.value = dataUrl.split(',')[1];
+
+            photo.src = dataUrl;
+            videoElement.hidden = true;
+            photo.hidden = false;
+            retakeButton.hidden = false;
+            captureButton.hidden = true; // Hide capture
+
+            // Stop the stream tracks
+            stream.getTracks().forEach(t => t.stop());
+        };
+
+        retakeButton.onclick = () => {
+            photo.hidden = true;
+            retakeButton.hidden = true;
+            captureButton.hidden = false; // Show capture
+            startCameraButton.hidden = false; // Show start button
+            startCameraButton.click(); // Automatically restart camera
+        };
+    </script>
+}

@@ -1,0 +1,150 @@
+﻿@model LEAVE_SYSTEM.Models.LogDetails
+@{
+    ViewBag.Title = $"Request Status - {Model.LogId}";
+
+    // Determine the status text and class for the badge (using inline styles for this user-focused view)
+    var status = ViewBag.Status as string ?? "Unknown";
+    string GetStatusBadgeStyle(string s) => s?.ToLower() switch
+    {
+        "verified" => "background-color: #d1fae5; color: #065f46;", // Light Green / Dark Green text
+        "in progress" => "background-color: #dbeafe; color: #1e40af;", // Light Blue / Dark Blue text
+        "pending" => "background-color: #fef3c7; color: #92400e;", // Light Yellow / Dark Yellow text
+        "rejected" => "background-color: #fee2e2; color: #991b1b;", // Light Red / Dark Red text
+        _ => "background-color: #f3f4f6; color: #4b5563;", // Gray / Gray text
+    };
+    var badgeStyle = GetStatusBadgeStyle(status);
+}
+
+<style>
+    /* Global Styles for Consistency */
+    .user-header {
+        font-weight: 700;
+        color: #1f2937;
+        padding-bottom: 5px;
+        margin-bottom: 5px;
+        font-size: 2rem;
+    }
+
+    .user-subtitle {
+        color: #6b7280;
+        margin-bottom: 30px;
+    }
+
+    /* Primary Card Styling (Focus on clean separation) */
+    .info-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Header Section for Photo and Name (User Focus) */
+    .user-profile-header {
+        padding: 30px;
+        background-color: #f9fafb; /* Lighter background */
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .user-profile-image {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 3px solid #006400; /* Subtle green accent */
+    }
+
+    /* Details Table Styling */
+    .detail-table th {
+        color: #6b7280;
+        font-weight: 500;
+        width: 200px;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    .detail-table td {
+        font-weight: 600;
+        color: #1f2937;
+        padding-top: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #e9ecef;
+    }
+
+    /* Status Badge Styling */
+    .status-badge-user {
+        border-radius: 9999px;
+        padding: 6px 14px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        display: inline-block;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="user-header">Verification Request Details</h1>
+    <p class="user-subtitle">Log ID: <span class="fw-bold text-dark">#@Model.LogId</span></p>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-times-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card info-card">
+
+        <div class="user-profile-header d-flex align-items-center">
+            <img src="@Model.VerificationImageUrl" class="user-profile-image me-4" alt="Verification Image" />
+            <div>
+                <h3 class="fw-bold mb-1 text-dark">@Model.Name @Model.Surname</h3>
+                <p class="text-muted mb-0">Employee ID: @Model.EmployeeNumber</p>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+                <h4 class="text-dark fw-bold mb-0">
+                    Current Status:
+                    <span class="status-badge-user" style="@badgeStyle">@status</span>
+                </h4>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-clock me-1"></i> Completed On: <span class="fw-semibold">@(ViewBag.CompletedAt ?? "N/A")</span>
+                </p>
+            </div>
+
+            <h5 class="fw-bold text-dark mb-3 mt-4"><i class="fas fa-list-alt me-2 text-muted"></i> Log Information</h5>
+            <table class="table table-borderless detail-table">
+                <tbody>
+                    <tr><th>Request Reference (Log ID)</th><td>@Model.LogId</td></tr>
+                    <tr><th>ID / Passport Number</th><td>@Model.IdNumber</td></tr>
+                    <tr><th>Department</th><td>@Model.Department</td></tr>
+                    <tr><th>Contract Type</th><td>@Model.Contract</td></tr>
+                    <tr><th>Gender</th><td>@Model.Gender</td></tr>
+                    <tr><th>Reason</th><td>@Model.Reason</td></tr>
+
+                </tbody>
+            </table>
+
+            <div class="mt-4 pt-3 border-top">
+                <a href="@Url.Action("Index", "Home")" class="btn btn-secondary fw-semibold">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/CDQ+09iWbuS0GgB6g/X9c/fB2C7H5D2nLhLw2pD/mNlA2O/0y7W3Z4H+Ww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+}

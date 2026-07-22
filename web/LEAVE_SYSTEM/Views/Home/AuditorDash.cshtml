@@ -1,0 +1,494 @@
+﻿@model IEnumerable<AuditLog>
+@using System.Text.Json
+@{
+    ViewBag.Title = "Audit Trail Dashboard";
+
+    // --- 1. SERVER-SIDE DATA AGGREGATION for Chart ---
+    var logResultCounts = Model.Where(l => l.Result != null)
+                                 .GroupBy(l => l.Result)
+                                 .Select(g => new { Result = g.Key, Count = g.Count() })
+                                 .ToList();
+
+    // Prepare data for Chart.js
+    var chartLabels = logResultCounts.Select(l => l.Result).ToList();
+    var chartData = logResultCounts.Select(l => l.Count).ToList();
+    var totalLogs = Model.Count();
+
+    // Define colors corresponding to status badge styles
+    var resultColors = new Dictionary<string, string>
+    {
+        {"Verified", "#10b981"},    // Brighter Green (Success)
+        {"Rejected", "#ef4444"},    // Brighter Red (Failure)
+        {"Pending", "#f59e0b"},     // Amber (Warning)
+        {"Error", "#6b7280"}        // Gray (System Error)
+    };
+
+    var defaultColor = "#4b5563";
+
+    var chartBackgroundColors = chartLabels.Select(label =>
+        resultColors.TryGetValue(label, out var color) ? color : defaultColor
+    ).ToList();
+
+    // Serialize data for JavaScript
+    var options = new JsonSerializerOptions { WriteIndented = false };
+    var labelsJson = System.Text.Json.JsonSerializer.Serialize(chartLabels, options);
+    var dataJson = System.Text.Json.JsonSerializer.Serialize(chartData, options);
+    var colorsJson = System.Text.Json.JsonSerializer.Serialize(chartBackgroundColors, options);
+}
+
+<style>
+    /* Branding and Typography */
+    .dashboard-header {
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 3px solid #006400; /* Green accent bar */
+        padding-bottom: 5px;
+        margin-bottom: 30px;
+        display: inline-block;
+        font-size: 2.5rem;
+    }
+
+    /* --- PROFESSIONAL CHART/VISUALIZATION STYLES --- */
+    .visualization-container {
+        display: flex;
+        justify-content: space-around; /* Distribute space */
+        align-items: flex-start; /* Align top */
+        margin-bottom: 30px;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .chart-panel {
+        flex: 1; /* Allow panel to grow */
+        min-width: 300px; /* Minimum size for readability */
+        max-width: 400px;
+        padding: 15px;
+        background: #ffffff;
+        border-radius: 12px; /* Slightly rounder corners */
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Deeper shadow for focus */
+        text-align: center;
+    }
+
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 10px;
+    }
+
+    .total-card {
+        width: 100%; /* Take full width of its panel */
+        height: 120px; /* Reduced height */
+        background-color: #ecfdf5; /* Very light green background */
+        border: 1px solid #a7f3d0; /* Soft green border */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .total-number {
+        font-size: 2.5rem; /* Reduced font size */
+        font-weight: 700;
+        color: #047857; /* Darker green for contrast */
+        line-height: 1;
+        margin-bottom: 3px;
+    }
+
+    .total-label {
+        font-size: 1rem;
+        color: #10b981;
+        font-weight: 500;
+    }
+    /* --- END CHART/VISUALIZATION STYLES --- */
+
+
+    /* Filters Section Styling */
+    .filter-container {
+        background-color: #f9fafb; /* Lighter background for filters */
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 15px; /* Reduced padding */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+        margin-bottom: 20px; /* Reduced margin */
+        width: 100%; /* Ensure it takes full width outside flex container */
+    }
+
+    .form-control:focus {
+        border-color: #006400;
+        box-shadow: 0 0 0 0.25rem rgba(0, 100, 0, 0.25);
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    /* --- TABLE COMPACTNESS/PROFESSIONALISM --- */
+    .audit-table {
+        border-collapse: separate;
+        border-spacing: 0 5px; /* Reduced space between rows */
+        width: 100%;
+    }
+
+        .audit-table thead th {
+            background-color: #f3f4f6; /* Slightly darker header */
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem; /* Smaller font size for header */
+            border-bottom: 2px solid #006400;
+            padding: 10px 10px; /* Reduced padding */
+        }
+
+        .audit-table tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* Lighter shadow on rows */
+            border-radius: 6px; /* Slightly smaller border radius */
+        }
+
+            .audit-table tbody tr:hover {
+                box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            }
+
+        .audit-table tbody td {
+            padding: 8px 10px; /* Reduced padding */
+            vertical-align: middle;
+            font-weight: 400; /* Lighter font weight for data */
+            font-size: 0.85rem; /* Smaller font size for data */
+            border: none;
+            white-space: nowrap; /* Prevent wrapping in non-reason columns */
+        }
+
+            .audit-table tbody td:nth-child(6) { /* Target the 'Reason' column for wrapping */
+                white-space: normal;
+                max-width: 250px;
+            }
+
+    /* Result Badge Helper Functions (Kept same size for clarity) */
+    .result-badge {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.7rem; /* Even smaller font for badges */
+        font-weight: 700;
+        display: inline-block;
+    }
+
+    .result-Verified {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .result-Rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+    /* --- END TABLE COMPACTNESS/PROFESSIONALISM --- */
+
+    /* Pagination Styling */
+    .page-link {
+        color: #006400;
+    }
+
+    .page-item.active .page-link {
+        background-color: #006400;
+        border-color: #006400;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="dashboard-header">Audit Trail Dashboard</h1>
+
+    <div class="visualization-container">
+        <div class="chart-panel">
+            <div class="chart-title">Audit Result Distribution</div>
+            <div style="height: 250px;"><canvas id="resultPieChart"></canvas></div>
+            <div class="total-card">
+                <i class="fas fa-history fa-xl text-success mb-1"></i>
+                <div class="total-number">@totalLogs</div>
+                <div class="total-label">Total Audit Entries</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filter-container">
+        <label class="filter-label" style="font-size: 1.1rem; color: #1f2937;">Filter Audit Log</label>
+        <div class="row g-2">
+            <div class="col-md-6">
+                <label for="search" class="filter-label mt-2">Search (ID Number, Verifier)</label>
+                <input type="text" id="search" class="form-control form-control-sm" placeholder="Search by ID or Verifier name..." />
+            </div>
+            <div class="col-md-3">
+                <label for="startDate" class="filter-label mt-2">Start Date</label>
+                <input type="date" id="startDate" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-3">
+                <label for="endDate" class="filter-label mt-2">End Date</label>
+                <input type="date" id="endDate" class="form-control form-control-sm" />
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table audit-table" id="auditTable">
+            <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>ID Number</th>
+                    <th>Department</th>
+                    <th>Verified By</th>
+                    <th>Result</th>
+                    <th>Reason</th>
+                    <th>Personnel #</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.LogId</td>
+                        <td>@item.IdNumber</td>
+                        <td>@item.Department</td>
+                        <td>@item.VerifierFirstName @item.VerifierSurname</td>
+                        <td>
+                            @{
+                                var resultClass = "result-" + item.Result.Replace(" ", "");
+                            }
+                            <span class="result-badge @resultClass">
+                                @item.Result
+                            </span>
+                        </td>
+                        <td>@item.Reason</td>
+                        <td>
+                            @item.VerifierPersonnelNumber
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <div id="infoText" class="text-muted small"></div>
+        <nav aria-label="Audit Log Pagination">
+            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        // --- CHART INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', function () {
+            const chartLabels = @Html.Raw(labelsJson);
+            const chartData = @Html.Raw(dataJson);
+            const chartColors = @Html.Raw(colorsJson);
+
+            const ctx = document.getElementById('resultPieChart');
+
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: chartLabels,
+                        datasets: [{
+                            data: chartData,
+                            backgroundColor: chartColors,
+                            hoverOffset: 15,
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%', 
+                        plugins: {
+                            title: {
+                                display: false, 
+                            },
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 10,
+                                    padding: 10,
+                                    font: {
+                                        size: 11,
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percentage = ((context.parsed / total) * 100).toFixed(1) + '%';
+                                            label += context.parsed + ' logs (' + percentage + ')';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+
+
+
+        const ROWS_PER_PAGE = 10;
+        let currentPage = 1;
+
+        const searchInput = document.getElementById('search');
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const tableBody = document.querySelector('#auditTable tbody');
+        const paginationControls = document.getElementById('paginationControls');
+        const infoText = document.getElementById('infoText');
+
+        const initialRows = Array.from(tableBody.querySelectorAll('tr'));
+        let filteredRows = [];
+
+        function isDateMatch(row, start, end) {
+            const timestampCell = row.cells[6]; 
+            const timestampText = timestampCell.getAttribute('data-timestamp');
+
+            if (!timestampText) return (start === null && end === null);
+
+            const logDate = new Date(timestampText);
+
+            if (start) {
+                const startDate = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+                if (logDate < startDate) return false;
+            }
+
+            if (end) {
+                const nextDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+                nextDay.setDate(nextDay.getDate() + 1);
+                if (logDate >= nextDay) return false;
+            }
+            return true;
+        }
+
+        function applyAuditFiltersAndPagination(page = 1) {
+            const filterText = searchInput.value.toLowerCase();
+            const start = startDateInput.value ? new Date(startDateInput.value) : null;
+            const end = endDateInput.value ? new Date(endDateInput.value) : null;
+
+            filteredRows = initialRows.filter(row => {
+                const idNumber = row.cells[1].innerText.toLowerCase();
+                const verifiedBy = row.cells[3].innerText.toLowerCase();
+                const verifierPersonnelNumber = row.cells[6].innerText.toLowerCase();
+
+                const textMatch = idNumber.includes(filterText) || verifiedBy.includes(filterText) || verifierPersonnelNumber.includes(filterText);
+
+                const dateMatch = isDateMatch(row, start, end);
+
+                return textMatch && dateMatch;
+            });
+
+            const maxPage = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+            currentPage = Math.max(1, Math.min(page, maxPage));
+
+            renderTablePage();
+            renderPaginationControls();
+        }
+
+        function renderTablePage() {
+            const totalRows = filteredRows.length;
+            const start = (currentPage - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+
+            initialRows.forEach(row => row.style.display = 'none');
+
+            for (let i = start; i < end && i < totalRows; i++) {
+                filteredRows[i].style.display = '';
+            }
+
+            const displayStart = totalRows === 0 ? 0 : start + 1;
+            const displayEnd = Math.min(end, totalRows);
+            infoText.textContent = `Showing ${displayStart} to ${displayEnd} of ${totalRows} entries.`;
+        }
+
+        function renderPaginationControls() {
+            paginationControls.innerHTML = '';
+            const pageCount = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+            if (pageCount <= 1) return;
+
+            const createPageItem = (page, text, disabled = false, active = false) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = text;
+                a.setAttribute('data-page', page);
+
+                if (!disabled && !active) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        applyAuditFiltersAndPagination(page);
+                    };
+                }
+
+                li.appendChild(a);
+                return li;
+            };
+
+            paginationControls.appendChild(createPageItem(currentPage - 1, 'Previous', currentPage === 1));
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(pageCount, currentPage + 2);
+
+            if (startPage > 1) {
+                 paginationControls.appendChild(createPageItem(1, '1'));
+                 if (startPage > 2) paginationControls.appendChild(createPageItem(0, '...', true));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationControls.appendChild(createPageItem(i, i, false, i === currentPage));
+            }
+
+            if (endPage < pageCount) {
+                if (endPage < pageCount - 1) paginationControls.appendChild(createPageItem(0, '...', true));
+                paginationControls.appendChild(createPageItem(pageCount, pageCount));
+            }
+
+            paginationControls.appendChild(createPageItem(currentPage + 1, 'Next', currentPage === pageCount));
+        }
+
+        const filterListeners = () => {
+            applyAuditFiltersAndPagination(1);
+        };
+
+        searchInput.addEventListener('input', filterListeners);
+        startDateInput.addEventListener('change', filterListeners);
+        endDateInput.addEventListener('change', filterListeners);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyAuditFiltersAndPagination(1);
+        });
+
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+        document.head.appendChild(fontAwesomeLink);
+    </script>
+}

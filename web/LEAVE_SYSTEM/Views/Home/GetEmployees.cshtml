@@ -1,0 +1,330 @@
+﻿@model IEnumerable<LEAVE_SYSTEM.Models.Employees>
+
+@{
+    ViewBag.Title = "All Employees";
+
+    // Define the list of departments for the dropdown
+    var departments = new List<string>
+    {
+        "All Departments", // Option to clear the filter
+        "Public Finance",
+        "Economic Policy and International Cooperation",
+        "Tax and Financial Sector Policy",
+        "Asset and Liability Management",
+        "Office of the Accountant-General",
+        "Intergovernmental Relations"
+    };
+}
+
+<style>
+    /* Branding and Typography */
+    .admin-header {
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 3px solid #006400; /* Green accent bar */
+        padding-bottom: 5px;
+        margin-bottom: 30px;
+        display: inline-block;
+        font-size: 2.5rem;
+    }
+
+    /* Filters Section Styling */
+    .filter-panel {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+    }
+
+    .filter-label {
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 5px;
+        display: block;
+        font-size: 0.9rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #006400;
+        box-shadow: 0 0 0 0.25rem rgba(0, 100, 0, 0.25);
+    }
+
+    /* Table Styling */
+    .employee-table {
+        border-collapse: separate;
+        border-spacing: 0 8px; /* Space between rows */
+        width: 100%;
+    }
+
+        .employee-table thead th {
+            background-color: #f8f9fa;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 2px solid #006400;
+            padding: 15px 12px;
+            vertical-align: middle;
+        }
+
+        .employee-table tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            transition: box-shadow 0.2s;
+        }
+
+            .employee-table tbody tr:hover {
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+        .employee-table tbody td {
+            padding: 12px;
+            vertical-align: middle;
+            font-weight: 500;
+            color: #1f2937;
+            border: none;
+        }
+
+    .profile-photo {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #e9ecef;
+    }
+
+    /* Pagination Styling */
+    .page-link {
+        color: #006400;
+    }
+
+    .page-item.active .page-link {
+        background-color: #006400;
+        border-color: #006400;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="admin-header">All Employees</h1>
+
+    <div class="filter-panel row g-3">
+        <div class="col-md-4">
+            <label for="departmentFilter" class="filter-label">Filter by Department</label>
+            <select id="departmentFilter" class="form-select">
+                @foreach (var dept in departments)
+                {
+                    <option value="@dept">@dept</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-8">
+            <label for="employeeSearch" class="filter-label">Search (Name, Personnel Number, or Department)</label>
+            <input type="text" id="employeeSearch" class="form-control" placeholder="Enter name, personnel number, or other keyword..." />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i> No employee records found.
+            </div>
+        }
+        else
+        {
+            <table class="table employee-table" id="employeeTable">
+                <thead>
+                    <tr>
+                        <th>Profile</th>
+                        <th>Name</th>
+                        <th>Personnel Number</th> @* Updated Header *@
+                        <th>Department</th>
+                        <th>Contract</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var emp in Model)
+                    {
+                        <tr>
+                            <td>
+                                <img src="@(!string.IsNullOrEmpty(emp.ProfileImageUrl) ? emp.ProfileImageUrl : "https://placehold.co/45x45/f3f4f6/4b5563?text=N/A")"
+                                     class="profile-photo" alt="Profile"
+                                     data-department="@emp.Department"
+                                     data-name="@($"{emp.FirstName} {emp.Surname}")"
+                                     data-personnel="@emp.employeeNumber" @* Added data attribute for filtering *@
+                                             />
+                            </td>
+                            <td>@($"{emp.FirstName} {emp.Surname}")</td>
+                            <td>@emp.employeeNumber</td> @* Updated Cell Content *@
+                            <td>@emp.Department</td>
+                            <td>@emp.Contract</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (Model != null && Model.Count() > 0)
+    {
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div id="infoText" class="text-muted small"></div>
+            <nav aria-label="Employee Pagination">
+                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // --- CONSTANTS ---
+        const ROWS_PER_PAGE = 10;
+        let currentPage = 1;
+
+        // --- DOM Elements ---
+        const searchInput = document.getElementById('employeeSearch');
+        const departmentFilter = document.getElementById('departmentFilter');
+        const tableBody = document.querySelector('#employeeTable tbody');
+        const paginationControls = document.getElementById('paginationControls');
+        const infoText = document.getElementById('infoText');
+
+        // Store all rows initially
+        const initialRows = Array.from(tableBody ? tableBody.querySelectorAll('tr') : []);
+        let filteredRows = initialRows;
+
+        // --- FILTERING & SEARCH LOGIC ---
+
+        function applyFiltersAndPagination(page = 1) {
+            const searchText = searchInput.value.toLowerCase();
+            const selectedDepartment = departmentFilter.value;
+
+            // 1. Filter the rows based on search and dropdown
+            filteredRows = initialRows.filter(row => {
+                // IMPORTANT: Cell indices have changed!
+                const name = row.cells[1].innerText.toLowerCase();
+                const personnelNumber = row.cells[2].innerText.toLowerCase(); // Personnel Number is now cell[2]
+                const departmentCell = row.cells[3].innerText;
+                const contract = row.cells[4].innerText.toLowerCase();
+
+                // PART 1: Department Filter Check
+                const departmentMatch = (selectedDepartment === "All Departments" || departmentCell === selectedDepartment);
+
+                // PART 2: Universal Search Check
+                // Search term must match name, personnel number, department, or contract.
+                const searchMatch = (
+                    name.includes(searchText) ||
+                    personnelNumber.includes(searchText) ||
+                    departmentCell.toLowerCase().includes(searchText) ||
+                    contract.includes(searchText)
+                );
+
+                // FINAL RESULT: Must satisfy both conditions
+                return departmentMatch && searchMatch;
+            });
+
+            // 2. Apply Pagination to the filtered list
+            const maxPage = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+            currentPage = Math.max(1, Math.min(page, maxPage));
+
+            renderTablePage();
+            renderPaginationControls();
+        }
+
+        // --- PAGINATION RENDERING LOGIC (Remains the same) ---
+
+        function renderTablePage() {
+            const totalRows = filteredRows.length;
+            const start = (currentPage - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+
+            initialRows.forEach(row => row.style.display = 'none');
+
+            for (let i = start; i < end && i < totalRows; i++) {
+                filteredRows[i].style.display = '';
+            }
+
+            const displayStart = totalRows === 0 ? 0 : start + 1;
+            const displayEnd = Math.min(end, totalRows);
+            infoText.textContent = `Showing ${displayStart} to ${displayEnd} of ${totalRows} entries.`;
+        }
+
+        function renderPaginationControls() {
+            paginationControls.innerHTML = '';
+            const pageCount = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+            if (pageCount <= 1) return;
+
+            const createPageItem = (page, text, disabled = false, active = false) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = text;
+
+                if (!disabled && !active) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        applyFiltersAndPagination(page);
+                    };
+                }
+
+                li.appendChild(a);
+                return li;
+            };
+
+            paginationControls.appendChild(createPageItem(currentPage - 1, 'Previous', currentPage === 1));
+
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(pageCount, currentPage + 2);
+
+            if (startPage > 1) {
+                 paginationControls.appendChild(createPageItem(1, '1'));
+                 if (startPage > 2) paginationControls.appendChild(createPageItem(0, '...', true));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationControls.appendChild(createPageItem(i, i, false, i === currentPage));
+            }
+
+            if (endPage < pageCount) {
+                if (endPage < pageCount - 1) paginationControls.appendChild(createPageItem(0, '...', true));
+                paginationControls.appendChild(createPageItem(pageCount, pageCount));
+            }
+
+            paginationControls.appendChild(createPageItem(currentPage + 1, 'Next', currentPage === pageCount));
+        }
+
+        // --- EVENT LISTENERS ---
+        const filterListeners = () => {
+            applyFiltersAndPagination(1);
+        };
+
+        if (searchInput) {
+            searchInput.addEventListener('input', filterListeners);
+        }
+        if (departmentFilter) {
+            departmentFilter.addEventListener('change', filterListeners);
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tableBody) {
+                applyFiltersAndPagination(1);
+            }
+        });
+
+        // Ensure Font Awesome loads
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+        document.head.appendChild(fontAwesomeLink);
+    </script>
+}

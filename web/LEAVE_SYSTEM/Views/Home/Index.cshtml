@@ -1,0 +1,337 @@
+﻿@model List<Log>
+@{
+    ViewData["Title"] = "Dashboard";
+    var currentName = ViewBag.CurrentName as string ?? "Employee";
+
+    // Style function for status badges
+    string GetStatusBadgeClass(string status) => status?.ToLower() switch
+    {
+        "verified" => "status-verified",
+        "in progress" => "status-inprogress",
+        "pending" => "status-pending",
+        "rejected" => "status-rejected",
+        _ => "status-default",
+    };
+}
+
+<style>
+    /* Base Styles */
+    .dashboard-title {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #006400; /* Dark Green Branding */
+        margin-bottom: 0.25rem;
+    }
+
+    .dashboard-subtitle {
+        font-size: 1.125rem;
+        color: #4b5563;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Table Styling */
+    #logsTable {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        #logsTable thead th {
+            background-color: #f8f9fa;
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 12px 24px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        #logsTable tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: background-color 0.2s;
+            border-radius: 6px;
+        }
+
+            #logsTable tbody tr:hover {
+                background-color: #f5f5f5;
+            }
+
+        #logsTable tbody td {
+            padding: 16px 24px;
+            font-weight: 500;
+            color: #1f2937;
+            vertical-align: middle;
+            border-top: 8px solid transparent; /* Gives space between rows */
+            border-bottom: 8px solid transparent;
+        }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-block;
+    }
+
+    .status-verified {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-inprogress {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-default {
+        background-color: #f3f4f6;
+        color: #4b5563;
+    }
+
+    /* Action Button (Seamless Look) */
+    .btn-details {
+        background: none;
+        border: 1px solid #d1d5db; /* Light gray border */
+        color: #4b5563;
+        padding: 6px 15px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+        .btn-details:hover {
+            background-color: #f0f4f7;
+            border-color: #9ca3af;
+            color: #1f2937;
+            text-decoration: none;
+        }
+
+    /* Primary Action Button (New Request) */
+    .btn-primary-action {
+        background-color: #006400;
+        border-color: #006400;
+        color: white;
+        padding: 10px 20px;
+        font-weight: 600;
+        transition: background-color 0.2s;
+    }
+
+        .btn-primary-action:hover {
+            background-color: #004c00;
+            border-color: #004c00;
+        }
+
+    /* Pagination Styling */
+    .page-link {
+        color: #006400; /* Green links */
+    }
+
+    .page-item.active .page-link {
+        background-color: #006400; /* Active green background */
+        border-color: #006400;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="dashboard-title">Welcome, @currentName</h1>
+    <p class="dashboard-subtitle">Manage and track verification requests</p>
+
+    <div class="table-responsive">
+        @if (Model == null || !Model.Any())
+        {
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i> No Verification Requests found. Click "New Verification Request" to start.
+            </div>
+        }
+        else
+        {
+            <table class="table" id="logsTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Completed</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model)
+                    {
+                        <tr>
+                            <td>
+                                @($"{log.Name} {log.Surname}")
+                            </td>
+
+                            <td>
+                                @{
+                                    var badgeClass = GetStatusBadgeClass(log.Status);
+                                }
+                            <span class="status-badge @badgeClass">
+                                @log.Status
+                            </span>
+                        </td>
+
+                        <td data-timestamp="@log.CompletedAt?.ToString("yyyy-MM-dd HH:mm:ss")">
+                            @(log.CompletedAt.HasValue
+                                                    ? log.CompletedAt.Value.ToString("M/d/yyyy, hh:mm tt")
+                                                    : "N/A")
+                    </td>
+
+                            <td>
+                                <a href="@Url.Action("UserLogDetails", "Home", new { logId = log.logId })" class="btn-details">
+                                    <i class="fas fa-eye me-1"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                                }
+                </tbody>
+            </table>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div id="infoText" class="text-muted small"></div>
+            <nav aria-label="Log Pagination">
+                <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                </ul>
+            </nav>
+        </div>
+    }
+
+    <br />
+    <div class="mt-3">
+        <a asp-action="AddLog" class="btn btn-primary-action">
+            <i class="fas fa-plus me-2"></i> New Verification Request
+        </a>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        // --- CONSTANTS ---
+        const ROWS_PER_PAGE = 10;
+        let currentPage = 1;
+
+        // --- DOM Elements ---
+        const tableBody = document.querySelector('#logsTable tbody');
+        const paginationControls = document.getElementById('paginationControls');
+        const infoText = document.getElementById('infoText');
+
+        // Store all rows initially
+        const initialRows = Array.from(tableBody ? tableBody.querySelectorAll('tr') : []);
+        let filteredRows = initialRows; // On this dashboard, filtering isn't implemented, so all rows are 'filtered' initially.
+
+        // --- PAGINATION RENDERING LOGIC ---
+
+        function renderTablePage() {
+            const totalRows = filteredRows.length;
+            const start = (currentPage - 1) * ROWS_PER_PAGE;
+            const end = start + ROWS_PER_PAGE;
+
+            // Hide all rows initially
+            initialRows.forEach(row => row.style.display = 'none');
+
+            // Display only the rows for the current page
+            for (let i = start; i < end && i < totalRows; i++) {
+                filteredRows[i].style.display = '';
+            }
+
+            // Update info text
+            const displayStart = totalRows === 0 ? 0 : start + 1;
+            const displayEnd = Math.min(end, totalRows);
+            infoText.textContent = `Showing ${displayStart} to ${displayEnd} of ${totalRows} entries.`;
+        }
+
+        function renderPaginationControls() {
+            paginationControls.innerHTML = '';
+            const pageCount = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+            if (pageCount <= 1) return;
+
+            // Function to create a page item link
+            const createPageItem = (page, text, disabled = false, active = false) => {
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = text;
+                a.setAttribute('data-page', page);
+
+                if (!disabled && !active) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        goToPage(page);
+                    };
+                }
+
+                li.appendChild(a);
+                return li;
+            };
+
+            // Function to jump to a specific page
+            const goToPage = (page) => {
+                currentPage = page;
+                renderTablePage();
+                renderPaginationControls();
+            };
+
+
+            // Prev button
+            paginationControls.appendChild(createPageItem(currentPage - 1, 'Previous', currentPage === 1));
+
+            // Page numbers logic (simplified range)
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(pageCount, currentPage + 2);
+
+            if (startPage > 1) {
+                 paginationControls.appendChild(createPageItem(1, '1'));
+                 if (startPage > 2) paginationControls.appendChild(createPageItem(0, '...', true));
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                paginationControls.appendChild(createPageItem(i, i, false, i === currentPage));
+            }
+
+            if (endPage < pageCount) {
+                if (endPage < pageCount - 1) paginationControls.appendChild(createPageItem(0, '...', true));
+                paginationControls.appendChild(createPageItem(pageCount, pageCount));
+            }
+
+
+            // Next button
+            paginationControls.appendChild(createPageItem(currentPage + 1, 'Next', currentPage === pageCount));
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if (tableBody) {
+                renderTablePage();
+                renderPaginationControls();
+            }
+        });
+
+        // Ensure Font Awesome loads
+        const fontAwesomeLink = document.createElement('link');
+        fontAwesomeLink.rel = 'stylesheet';
+        fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css';
+        document.head.appendChild(fontAwesomeLink);
+    </script>
+}

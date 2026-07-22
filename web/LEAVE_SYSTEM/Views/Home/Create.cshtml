@@ -1,0 +1,237 @@
+﻿@model LEAVE_SYSTEM.Models.Employee
+
+@{
+    ViewData["Title"] = "Register Employee";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Employee Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body class="flex items-center justify-center py-12 bg-gray-50">
+    <div class="register-form-container w-full max-w-2xl bg-white p-8 md:p-12 rounded-2xl shadow-xl border border-gray-200">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800 tracking-tight">Create Employee Account</h1>
+            <p class="mt-2 text-lg text-gray-500">Please fill in the details below to register a new employee.</p>
+        </div>
+
+        <form asp-action="RegisterUser" method="post" class="space-y-6">
+            <div asp-validation-summary="ModelOnly"
+                 class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative"
+                 role="alert"></div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
+                    <ul class="list-disc list-inside">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+
+
+            <div>
+                <label asp-for="FirstName" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-user"></i></span>
+                    <input asp-for="FirstName" type="text" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g. Tshepo" />
+                    <span asp-validation-for="FirstName" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Surname" class="block text-sm font-medium text-gray-700 mb-1">Surname</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-user-tag"></i></span>
+                    <input asp-for="Surname" type="text" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g. Sepeko" />
+                    <span asp-validation-for="Surname" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="EmailAddress" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                    <input asp-for="EmailAddress" type="email" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g. tshepo@example.com" />
+                    <span asp-validation-for="EmailAddress" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-lock"></i></span>
+                    <input asp-for="Password" type="password" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="Password" />
+                    <span asp-validation-for="Password" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="IdNumber" class="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-id-card"></i></span>
+                    <input asp-for="IdNumber" type="text" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g. 9901015800084" />
+                    <span asp-validation-for="IdNumber" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="EmployeeNumber" class="block text-sm font-medium text-gray-700 mb-1">Personnel Number</label>
+                <div class="mt-1 input-wrapper">
+                    <span class="input-icon"><i class="fas fa-hashtag"></i></span>
+                    <input asp-for="EmployeeNumber" type="text" class="form-control-padding block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm" placeholder="e.g. EMP12345" />
+                    <span asp-validation-for="EmployeeNumber" class="text-red-500 text-sm mt-1 block"></span>
+                </div>
+            </div>
+
+            <div>
+                <label asp-for="Department" class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <select asp-for="Department" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                    <option value="">Select Department</option>
+                    <option>Public Finance</option>
+                    <option>Economic Policy and International Cooperation</option>
+                    <option>Tax and Financial Sector Policy</option>
+                    <option>Asset and Liability Management</option>
+                    <option>Office of the Accountant-General</option>
+                    <option>Intergovernmental Relations</option>
+
+                </select>
+                <span asp-validation-for="Department" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <div>
+                <label asp-for="Contract" class="block text-sm font-medium text-gray-700 mb-1">Contract Type</label>
+                <select asp-for="Contract" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                    <option value="">Select Contract Type</option>
+                    <option>Permanent</option>
+                    <option>Temporary</option>
+                    <option>Internship</option>
+                </select>
+                <span asp-validation-for="Contract" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <div>
+                <label asp-for="Gender" class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+                <select asp-for="Gender" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm">
+                    <option value="">Select Gender</option>
+                    <option>Male</option>
+                    <option>Female</option>
+                    <option>Other</option>
+                </select>
+                <span asp-validation-for="Gender" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <div class="flex items-center">
+                <input asp-for="PopiaConsent" type="checkbox" value="True"
+                       class="h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500" />
+                <label class="ml-2 block text-sm text-gray-700">
+                    I consent to the processing of my personal data (POPIA)
+                </label>
+            </div>
+            <span asp-validation-for="PopiaConsent" class="text-red-500 text-sm mt-1 block"></span>
+            <div class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700">Profile Photo</label>
+
+                <div id="cameraContainer" class="flex flex-col items-center space-y-3">
+                    <video id="camera" autoplay class="rounded-lg border border-gray-300 w-64 h-64 object-cover"></video>
+                    <canvas id="snapshot" class="hidden rounded-lg border border-gray-300 w-64 h-64 object-cover"></canvas>
+
+                    <div class="flex gap-3">
+                        <button type="button" id="startCameraBtn" class="w-full py-3 px-4 rounded-md text-white font-semibold shadow-md bg-green-600 hover:bg-green">Start Camera</button>
+                        <button type="button" id="captureBtn" class="w-full py-3 px-4 rounded-md text-white font-semibold shadow-md bg-green-600 hover:bg-green-700 hidden">Capture</button>
+                        <button type="button" id="retakeBtn" class="w-full py-3 px-4 rounded-md text-white font-semibold shadow-md bg-green-600 hover:bg-green-700 hidden">Retake</button>
+                    </div>
+                </div>
+
+                <input type="hidden" asp-for="ProfileImageBase64" id="ProfileImageBase64" />
+                <span asp-validation-for="ProfileImageBase64" class="text-red-500 text-sm mt-1 block"></span>
+
+        
+            @if (TempData["ApiDebug"] != null)
+            {
+                <div class="text-red-600 mb-4">@TempData["ApiDebug"]</div>
+            }
+
+            <button id="registerSubmit" type="submit"
+                    class="w-full py-3 px-4 rounded-md text-white font-semibold shadow-md bg-green-600 hover:bg-green-700">
+                Register
+            </button>
+                <p class="mt-2 text-lg text-gray-500">
+                    Already have an account yet?
+                    <a asp-action="Login" style="font-weight:600;font-style:bold">Log In</a>
+
+                </p>
+        </form>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById("startCameraBtn");
+        const captureBtn = document.getElementById("captureBtn");
+        const retakeBtn = document.getElementById("retakeBtn");
+        const camera = document.getElementById("camera");
+        const canvas = document.getElementById("snapshot");
+        const profileInput = document.getElementById("ProfileImageBase64");
+
+        let stream = null;
+
+        startBtn.addEventListener("click", async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                camera.srcObject = stream;
+                startBtn.classList.add("hidden");
+                captureBtn.classList.remove("hidden");
+            } catch (err) {
+                alert("Camera access denied or unavailable");
+                console.error(err);
+            }
+        });
+
+        captureBtn.addEventListener("click", () => {
+            const context = canvas.getContext("2d");
+            canvas.width = camera.videoWidth;
+            canvas.height = camera.videoHeight;
+            context.drawImage(camera, 0, 0, canvas.width, canvas.height);
+
+            canvas.classList.remove("hidden");
+            camera.classList.add("hidden");
+            captureBtn.classList.add("hidden");
+            retakeBtn.classList.remove("hidden");
+
+            const imageData = canvas.toDataURL("image/jpeg").split(',')[1];
+            profileInput.value = imageData;
+
+            if (stream) {
+                stream.getTracks().forEach(t => t.stop());
+            }
+        });
+
+        retakeBtn.addEventListener("click", async () => {
+            canvas.classList.add("hidden");
+            camera.classList.remove("hidden");
+            retakeBtn.classList.add("hidden");
+            captureBtn.classList.remove("hidden");
+            profileInput.value = "";
+
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            camera.srcObject = stream;
+        });
+    </script>
+
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</body>
+</html>

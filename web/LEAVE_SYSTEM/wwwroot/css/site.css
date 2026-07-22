@@ -1,0 +1,90 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f0f4f8 0%, #e5e9f2 100%);
+    min-height: 100vh;
+}
+
+.form-input-focus:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    outline: none;
+}
+
+.form-select-focus:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    outline: none;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af; /* Tailwind's gray-400 */
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.register-form-container {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn-success-green {
+    background-color: #28a745;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .btn-success-green:hover {
+        background-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+.form-control-padding {
+    padding-left: 2.5rem;
+}
+
+.btn-primary {
+    @apply py-3 px-4 rounded-md text-white font-semibold shadow-md bg-green-600 hover:bg-green-700 transition duration-150 ease-in-out;
+}
+.btn-disabled {
+    @apply bg-gray-400 text-white cursor-not-allowed;
+}
+

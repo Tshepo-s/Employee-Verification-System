@@ -1,0 +1,457 @@
+﻿@model List<LEAVE_SYSTEM.Models.Log>
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Verification Logs Dashboard";
+
+    var logStatusCounts = Model.GroupBy(l => l.Status)
+                                 .Select(g => new { Status = g.Key, Count = g.Count() })
+                                 .ToList();
+    var totalLogs = Model.Count();
+
+    var chartLabels = logStatusCounts.Select(l => l.Status).ToList();
+    var chartData = logStatusCounts.Select(l => l.Count).ToList();
+
+    var statusColors = new Dictionary<string, string>
+    {
+        {"verified", "#065f46"},
+        {"Completed", "#065f46"},
+        {"In Progress", "#1e40af"},
+        {"pending", "#92400e"},
+        {"rejected", "#991b1b"}
+    };
+
+    var defaultColor = "#4b5563";
+
+    var chartBackgroundColors = chartLabels.Select(label =>
+        statusColors.TryGetValue(label, out var color) ? color : defaultColor
+    ).ToList();
+
+    var options = new JsonSerializerOptions { WriteIndented = false };
+    var labelsJson = JsonSerializer.Serialize(chartLabels, options);
+    var dataJson = JsonSerializer.Serialize(chartData, options);
+    var colorsJson = JsonSerializer.Serialize(chartBackgroundColors, options);
+}
+
+<style>
+    .dashboard-header {
+        font-weight: 700;
+        color: #1f2937;
+        border-bottom: 3px solid #006400;
+        padding-bottom: 5px;
+        margin-bottom: 25px;
+        display: inline-block;
+    }
+
+    .filter-card {
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-control:focus {
+        border-color: #006400;
+        box-shadow: 0 0 0 0.25rem rgba(0, 100, 0, 0.25);
+    }
+
+    .visualization-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 30px;
+        gap: 30px;
+    }
+
+    .pie-chart-box {
+        width: 350px;
+        max-height: 350px;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .total-card {
+        width: 250px;
+        height: 180px;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .total-number {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #006400;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    .total-label {
+        font-size: 1.1rem;
+        color: #4b5563;
+        font-weight: 600;
+    }
+
+    #logsTable {
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+        #logsTable thead th {
+            background-color: #f8f9fa;
+            color: #4b5563;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            border-bottom: 2px solid #e9ecef;
+            padding: 12px;
+        }
+
+        #logsTable tbody tr {
+            background-color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            cursor: default;
+        }
+
+            #logsTable tbody tr:hover {
+                background-color: #f0f4f7;
+            }
+
+        #logsTable tbody td {
+            padding: 15px 12px;
+            vertical-align: middle;
+            font-weight: 500;
+            border: none;
+        }
+
+    .profile-photo {
+        width: 45px;
+        height: 45px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid #006400;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-Completed {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-InProgress {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-Pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-Rejected {
+        background-color: #fee2e2;
+        color: #991b1b;
+    }
+
+    .btn-action {
+        background-color: #006400;
+        border: none;
+        color: white;
+        padding: 6px 15px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        transition: background-color 0.2s;
+    }
+
+        .btn-action:hover {
+            background-color: #004c00;
+            color: white;
+        }
+
+    .page-link {
+        color: #006400;
+    }
+
+    .page-item.active .page-link {
+        background-color: #006400;
+        border-color: #006400;
+        color: white;
+    }
+</style>
+
+<div class="container mt-5">
+    <h1 class="dashboard-header">Verification Logs Dashboard</h1>
+
+    <div class="visualization-container">
+        <div class="pie-chart-box">
+            <canvas id="statusPieChart"></canvas>
+        </div>
+
+        <div class="total-card">
+            <i class="fas fa-database fa-2x text-muted mb-2"></i>
+            <div class="total-number">@totalLogs</div>
+            <div class="total-label">Total Verification Logs</div>
+        </div>
+    </div>
+
+    <div class="filter-card mb-4 d-flex flex-wrap gap-3 align-items-center">
+        <div class="flex-grow-1">
+            <label class="form-label fw-semibold text-muted mb-1">Search Employee</label>
+            <input type="text" id="search" class="form-control" placeholder="Search by name or employee number..." />
+        </div>
+
+        <div class="flex-grow-1" style="max-width: 250px;">
+            <label class="form-label fw-semibold text-muted mb-1">Date Range (Start)</label>
+            <input type="date" id="startDate" class="form-control" />
+        </div>
+
+        <div class="flex-grow-1" style="max-width: 250px;">
+            <label class="form-label fw-semibold text-muted mb-1">Date Range (End)</label>
+            <input type="date" id="endDate" class="form-control" />
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table" id="logsTable">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Completed At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.OrderByDescending(l => l.CompletedAt))
+                {
+                    <tr>
+                        <td>
+                            <img src="@log.VerificationImageUrl" alt="Verification Photo" class="profile-photo" />
+                        </td>
+                        <td>@log.Name @log.Surname</td>
+                        <td>
+                            @{
+                                var statusClass = "status-" + log.Status.Replace(" ", "");
+                            }
+                        <span class="status-badge @statusClass">
+                            @log.Status
+                        </span>
+                    </td>
+                    <td data-timestamp="@log.CompletedAt?.ToString("yyyy-MM-dd HH:mm:ss")">
+                        @(log.CompletedAt.HasValue
+                                                ? log.CompletedAt.Value.ToString("MMM dd, yyyy h:mm tt")
+                                                : "N/A")
+                    </td>
+                    <td>
+                        <a href="@Url.Action("LogDetails", "Home", new { logId = log.logId })" class="btn-action">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </a>
+                    </td>
+                </tr>
+                                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <div id="infoText" class="text-muted small"></div>
+        <nav aria-label="Verification Log Pagination">
+            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+            </ul>
+        </nav>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+    <script>
+          document.addEventListener('DOMContentLoaded', function () {
+              const chartLabels = @Html.Raw(labelsJson);
+              const chartData = @Html.Raw(dataJson);
+              const chartColors = @Html.Raw(colorsJson);
+
+              const ctx = document.getElementById('statusPieChart');
+
+              if (ctx) {
+                  new Chart(ctx, {
+                      type: 'pie',
+                      data: {
+                          labels: chartLabels,
+                          datasets: [{
+                              data: chartData,
+                              backgroundColor: chartColors,
+                              hoverOffset: 10,
+                              borderWidth: 1.5,
+                              borderColor: '#ffffff'
+                          }]
+                      },
+                      options: {
+                          responsive: true,
+                          maintainAspectRatio: false,
+                          plugins: {
+                              legend: {
+                                  position: 'right',
+                                  labels: {
+                                      boxWidth: 15,
+                                      padding: 15,
+                                      font: {
+                                          size: 14,
+                                          weight: '600'
+                                      }
+                                  }
+                              },
+                              tooltip: {
+                                  callbacks: {
+                                      label: function(context) {
+                                          let label = context.label || '';
+                                          if (label) {
+                                              label += ': ';
+                                          }
+                                          if (context.parsed !== null) {
+                                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                              const percentage = ((context.parsed / total) * 100).toFixed(1) + '%';
+                                              label += context.parsed + ' (' + percentage + ')';
+                                          }
+                                          return label;
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  });
+              }
+          });
+
+          const ROWS_PER_PAGE = 10;
+          let currentPage = 1;
+
+          const searchInput = document.getElementById('search');
+          const startDateInput = document.getElementById('startDate');
+          const endDateInput = document.getElementById('endDate');
+          const tableBody = document.querySelector('#logsTable tbody');
+          const paginationControls = document.getElementById('paginationControls');
+          const infoText = document.getElementById('infoText');
+
+          const initialRows = Array.from(tableBody ? tableBody.querySelectorAll('tr') : []);
+          let filteredRows = [];
+
+          function isDateMatch(row, start, end) {
+              const timestampCell = row.cells[3];
+              const dateCellText = timestampCell.innerText;
+
+              if (dateCellText === "N/A" || !dateCellText) return (start === null && end === null);
+
+              const completedAt = new Date(dateCellText);
+
+              if (isNaN(completedAt.getTime())) return false;
+
+              const startDate = start ? new Date(start.getFullYear(), start.getMonth(), start.getDate()) : null;
+              const endDate = end ? new Date(end.getFullYear(), end.getMonth(), end.getDate()) : null;
+
+              if (startDate && completedAt < startDate) return false;
+
+              if (endDate) {
+                  const nextDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+                  nextDay.setDate(nextDay.getDate() + 1);
+                  if (completedAt >= nextDay) return false;
+              }
+              return true;
+          }
+
+          function applyFiltersAndPagination(page = 1) {
+              const filterText = searchInput.value.toLowerCase();
+              const start = startDateInput.value ? new Date(startDateInput.value) : null;
+              const end = endDateInput.value ? new Date(endDateInput.value) : null;
+
+              filteredRows = initialRows.filter(row => {
+                  const nameCell = row.cells[1].innerText.toLowerCase();
+
+                  const textMatch = nameCell.includes(filterText);
+                  const dateMatch = isDateMatch(row, start, end);
+
+                  return textMatch && dateMatch;
+              });
+
+              const maxPage = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+              currentPage = Math.max(1, Math.min(page, maxPage));
+
+              renderTablePage();
+              renderPaginationControls();
+          }
+
+          function renderTablePage() {
+              const totalRows = filteredRows.length;
+              const start = (currentPage - 1) * ROWS_PER_PAGE;
+              const end = start + ROWS_PER_PAGE;
+
+              initialRows.forEach(row => row.style.display = 'none');
+
+              for (let i = start; i < end && i < totalRows; i++) {
+                  filteredRows[i].style.display = '';
+              }
+
+              const displayStart = totalRows === 0 ? 0 : start + 1;
+              const displayEnd = Math.min(end, totalRows);
+              infoText.textContent = `Showing ${displayStart} to ${displayEnd} of ${totalRows} entries.`;
+          }
+
+          function renderPaginationControls() {
+              paginationControls.innerHTML = '';
+              const pageCount = Math.ceil(filteredRows.length / ROWS_PER_PAGE);
+
+              if (pageCount <= 1) return;
+
+              const createPageItem = (page, text, disabled = false, active = false) => {
+                  const li = document.createElement('li');
+                  li.className = `page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}`;
+
+                  const a = document.createElement('a');
+                  a.className = 'page-link';
+                  a.href = '#';
+                  a.textContent = text;
+                  a.setAttribute('data-page', page);
+
+                  if (!disabled && !active) {
+                      a.onclick = (e) => {
+                          e.preventDefault();
+                          applyFiltersAndPagination(page);
+                      };
+                  }
+
+                  li.appendChild(a);
+                  return li;
+            };
+
+            paginationControls.appendChild(createPageItem(currentPage - 1, '«', currentPage === 1));
+            for (let i = 1; i <= pageCount; i++) {
+                paginationControls.appendChild(createPageItem(i, i, false, i === currentPage));
+            }
+            paginationControls.appendChild(createPageItem(currentPage + 1, '»', currentPage === pageCount));
+        }
+
+        searchInput?.addEventListener('input', () => applyFiltersAndPagination(1));
+        startDateInput?.addEventListener('change', () => applyFiltersAndPagination(1));
+        endDateInput?.addEventListener('change', () => applyFiltersAndPagination(1));
+
+        applyFiltersAndPagination();
+    </script>
+}

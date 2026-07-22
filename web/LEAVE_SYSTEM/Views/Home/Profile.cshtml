@@ -1,0 +1,139 @@
+﻿@model LEAVE_SYSTEM.Models.Profile
+@{
+    ViewBag.Title = "My Profile";
+}
+
+<style>
+    /* Custom styles for a professional and beautiful look */
+    .profile-header {
+        font-weight: 700;
+        color: #1f2937; /* Dark text for professionalism */
+        border-bottom: 2px solid #006400; /* National Treasury Green accent */
+        padding-bottom: 5px;
+        margin-bottom: 20px;
+        display: inline-block;
+    }
+
+    .profile-card {
+        border: none;
+        border-radius: 12px; /* Smoother corners */
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Enhanced shadow */
+    }
+
+    .profile-img-container {
+        padding: 30px 15px;
+        background-color: #f8f9fa; /* Light background for image container */
+        border-right: 1px solid #e9ecef;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .profile-picture {
+        width: 150px; /* Standardized size */
+        height: 150px;
+        object-fit: cover;
+        border: 4px solid #ffffff; /* White border to make it pop */
+        box-shadow: 0 0 0 2px #006400; /* Green outer ring */
+    }
+
+    .profile-details th {
+        color: #4b5563; /* Subtle gray for labels */
+        font-weight: 600; /* Bolder label text */
+        width: 150px; /* Align columns */
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .profile-details td {
+        font-weight: 500;
+        color: #1f2937;
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+
+    .card-title {
+        color: #006400; /* Green accent for section title */
+        font-weight: 700;
+        margin-bottom: 20px;
+    }
+
+    .btn-green {
+        background-color: #006400;
+        border-color: #006400;
+        color: white;
+        transition: background-color 0.3s;
+    }
+
+        .btn-green:hover {
+            background-color: #004c00;
+            border-color: #004c00;
+            color: white;
+        }
+</style>
+
+<div class="container mt-5">
+    <h1 class="profile-header">My Profile</h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger" role="alert">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="card profile-card mb-4">
+        <div class="card-body row p-0">
+
+            <div class="col-md-3 text-center profile-img-container d-flex flex-column align-items-center justify-content-center">
+                <img src="@Model.ProfileImageUrl" class="rounded-circle profile-picture mb-3" alt="Profile Picture" />
+                <h4 class="mb-0 text-dark">@Model.FirstName @Model.Surname</h4>
+                <p class="text-muted">@Model.EmployeeNumber</p>
+            </div>
+
+            <div class="col-md-9 p-4">
+                <h5 class="card-title">Personal and Employment Details</h5>
+                <table class="table table-borderless profile-details">
+                    <tbody>
+                        <tr>
+                            <th>Email Address</th>
+                            <td>@Model.EmailAddress</td>
+                        </tr>
+                        <tr>
+                            <th>ID Number</th>
+                            <td>@Model.IdNumber</td>
+                        </tr>
+                        <tr>
+                            <th>Department</th>
+                            <td>@Model.Department</td>
+                        </tr>
+                        <tr>
+                            <th>Contract Type</th>
+                            <td>@Model.Contract</td>
+                        </tr>
+                        <tr>
+                            <th>Gender</th>
+                            <td>@Model.Gender</td>
+                        </tr>
+                        <tr>
+                            <th>POPIA Consent</th>
+                            <td>
+                                @if (Model.PopiaConsent == "Yes")
+                                {
+                                    <span class="badge bg-success">@Model.PopiaConsent</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@Model.PopiaConsent</span>
+                                }
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+<script src="https://kit.fontawesome.com/your-unique-kit-id.js" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLMD/CDQ+09iWbuS0GgB6g/X9c/fB2C7H5D2nLhLw2pD/mNlA2O/0y7W3Z4H+Ww==" crossorigin="anonymous" referrerpolicy="no-referrer" />
