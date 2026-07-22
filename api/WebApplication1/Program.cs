@@ -62,7 +62,7 @@ builder.Services.AddSingleton(cloudinary);
 
 
 // Register Firestore
-builder.Services.AddSingleton(provider => FirestoreDb.Create("leavesystem-520ac"));
+builder.Services.AddSingleton(provider => FirestoreDb.Create(""));
 
 
 
