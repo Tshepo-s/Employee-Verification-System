@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "58161293139",
+    "project_id": "leavesystem-520ac",
+    "storage_bucket": "leavesystem-520ac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58161293139:android:0b92ea89fb821c4650e3a6",
+        "android_client_info": {
+          "package_name": "com.example.leavesystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSXEt-lE5y5jtYerFh-lgBUgt-vtp-w-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
